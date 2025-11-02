@@ -1,5 +1,5 @@
 import datetime
-from typing import Callable, Any
+
 
 import async_lru
 import dotenv
@@ -7,15 +7,12 @@ import os
 import telethon as tl
 import asyncio
 import logging
-
-from telethon.tl.types import InputPeerUser
-
 import captcha_stuff
 
 from telethon.sync import TelegramClient, events
 from telethon.tl import types, functions
 from types import NoneType
-
+from typing import Callable, Any
 
 logging.basicConfig(format='[%(levelname) %(asctime)s] %(name)s: %(message)s',
                     level=logging.INFO)
@@ -25,11 +22,9 @@ API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-print(API_ID, API_HASH, BOT_TOKEN)
-
 class PendingCaptcha:
     def __init__(self, user: tl.types.User, _timestamp: float, channel: tl.types.Channel, bot: TelegramClient):
-        self.time_to_complete = 30
+        self.time_to_complete = 5*60
         self.completed = False
         self.user: tl.types.User = user
         self.beginning_time = datetime.datetime.fromtimestamp(_timestamp)
@@ -49,7 +44,7 @@ class PendingCaptcha:
             name = self.user.first_name + " " + self.user.last_name
         else:
             name = self.user.first_name
-        msg = f"""[{name}](tg://user?id={self.user.id}), приветствуем в чате! Для того чтобы начать общаться, пройдите **капчу**.
+        msg = f"""Для того чтобы начать общаться, пройдите **капчу**, [{name}](tg://user?id={self.user.id}).
 Напишите название животного (одним словом без прилагательных и спецсимволов), изображённого на эмодзи: {self.emoji}.
 
 Возникли проблемы? Напишите модераторам!
@@ -140,7 +135,7 @@ with TelegramClient('CaptchaBOT', API_ID, API_HASH) as bot:
     @async_lru.alru_cache()
     async def getme() -> int:
         a = await bot.get_me()
-        if isinstance(a, (types.InputUser, InputPeerUser)):
+        if isinstance(a, (types.InputUser, types.InputPeerUser)):
             return a.user_id
         else:
             return a.id
@@ -195,9 +190,12 @@ with TelegramClient('CaptchaBOT', API_ID, API_HASH) as bot:
     #                            buttons=types.ReplyKeyboardForceReply(single_use=True, selective=True))
 
 
-    @bot.on(events.NewMessage(pattern='(?i).*Hello'))
-    async def eee(event: tl.types.Message):
-        await event.reply('Hey!')
+    @bot.on(events.NewMessage(pattern='/stopitall'))
+    async def eee(event: tl.custom.Message):
+        await event.delete()
+        bot.disconnect()
+        raise KeyboardInterrupt
+
 
     try:
         bot.run_until_disconnected()
