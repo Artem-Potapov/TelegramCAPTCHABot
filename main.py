@@ -24,7 +24,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 class PendingCaptcha:
     def __init__(self, user: tl.types.User, _timestamp: float, channel: tl.types.Channel, bot: TelegramClient):
-        self.time_to_complete = 5*60
+        self.time_to_complete = 15*60
         self.completed = False
         self.user: tl.types.User = user
         self.beginning_time = datetime.datetime.fromtimestamp(_timestamp)
@@ -102,7 +102,8 @@ class PendingCaptcha:
             usr = tl.utils.get_input_user(self.user)
             tm = self.beginning_time.__add__(datetime.timedelta(365*20))
             try:
-                await bot.edit_permissions(inp_cnl, usr, tm,
+                #await bot.kick_participant(inp_cnl, usr)
+                await bot.edit_permissions(inp_cnl, usr, datetime.timedelta(365*20),
                                            view_messages=False,
                                            send_messages=False,
                                            send_media=False,
@@ -115,13 +116,15 @@ class PendingCaptcha:
                                            change_info=False,
                                            invite_users=False,
                                            pin_messages=False)
+
             except Exception as E:
                 tmp = ""
                 if isinstance(E, tl.errors.ChatAdminRequiredError):
                     tmp = "Кажется, что у бота нету прав банить юзеров!"
                 await bot.send_message(inp_cnl, f"Произошла ошибка при попытке забанить юзера @{self.user.username} [ссылка](tg://user?id={self.user.id}) `{self.user.id}`!\n{tmp}")
             else:
-                await bot.send_message(inp_cnl, f"Юзер @{self.user.username} [ссылка](tg://user?id={self.user.id} `{self.user.id}` Успешно забанен за невыполнение капчи!")
+                _ = f"@{self.user.username}" if self.user.username else f"[{self.user.first_name}](tg://user?id={self.user.id})"
+                await bot.send_message(inp_cnl, f"Юзер {_} [ссылка](tg://user?id={self.user.id}) `{self.user.id}` Успешно забанен за невыполнение капчи!")
             bot.remove_event_handler(self.captcha_handler)
             del self
             return 2

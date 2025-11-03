@@ -39,10 +39,13 @@ def distance(str1: str, str2: str|Sequence[str]):
         for i in range(len(str1)):
             if str1[i] != str2[i]:
                 let = str1[i]
-                if str2[i] in letters[let].keys():
-                    dist += 1
-                else:
-                    dist += 3
+                try:
+                    if str2[i] in letters[let].keys():
+                        dist += 1
+                    else:
+                        dist += 3
+                except KeyError:
+                    return 15556
         return dist
     return 15556
 
