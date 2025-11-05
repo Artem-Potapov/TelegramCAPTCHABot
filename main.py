@@ -132,8 +132,8 @@ class PendingCaptcha:
 
 
 
-with TelegramClient('CaptchaBOT', API_ID, API_HASH) as bot:
-    bot: TelegramClient = bot.start(bot_token=BOT_TOKEN)
+with TelegramClient('CaptchaBOT', API_ID, API_HASH).start(bot_token=BOT_TOKEN) as bot:
+    bot: TelegramClient = bot # this is just because some IDEs won't typehint autmatically
 
     @async_lru.alru_cache()
     async def getme() -> int:

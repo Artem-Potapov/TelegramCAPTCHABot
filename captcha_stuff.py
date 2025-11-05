@@ -3,8 +3,13 @@ from collections.abc import Sequence
 
 from key_presets import letters
 import json
+import os
 
-file = open("captchas.json", "r", encoding="utf-8")
+
+script_directory = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
+
+
+file = open(f"{script_directory}/captchas.json", "r", encoding="utf-8")
 list_captcha: dict[str, list] = json.load(file)
 file.close()
 
